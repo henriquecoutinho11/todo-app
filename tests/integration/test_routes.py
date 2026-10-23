@@ -6,6 +6,25 @@ def test_api_health_check(client):
     assert response.status_code == 200
     assert response.get_json() == {"status": "ok"}
 
+def test_api_criar_tarefa_com_titulo_ausente_ou_em_branco_deve_retornar_400(client):
+    """
+    Verifica que a API rejeita tarefas sem título ou com título composto
+    apenas por espaços, e que nenhuma delas é adicionada à lista.
+    """
+    payloads_invalidos = [
+        {"description": "Sem título"},
+        {"description": "Título em branco", "title": "   "},
+    ]
+
+    for payload in payloads_invalidos:
+        response = client.post("/api/todos", json=payload)
+
+        assert response.status_code == 400
+        assert "error" in response.get_json()
+
+    response = client.get("/api/todos")
+    assert response.status_code == 200
+    assert response.get_json() == []
 
 def test_api_listar_tarefas_inicialmente_vazia(client):
     """
